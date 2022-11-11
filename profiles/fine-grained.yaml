@@ -1,4 +1,9 @@
-{
+apiVersion: seccomp.imjasonh.dev/v1alpha1
+kind: SeccompProfile
+metadata:
+  name: fine-grained
+spec:
+  contents: {
     "defaultAction": "SCMP_ACT_ERRNO",
     "architectures": [
         "SCMP_ARCH_X86_64",

@@ -34,10 +34,36 @@ spec:
             spec:
               description: Spec holds the desired state of the SeccompProfile (from the client).
               type: object
+              required:
+                - contents
               properties:
                 contents:
                   description: Contents contains the contents of the policy as JSON.
-                  type: string
+                  type: object
+                  properties:
+                    architectures:
+                      type: array
+                      items:
+                        type: string
+                    defaultAction:
+                      type: string
+                    syscalls:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          action:
+                            type: string
+                          args:
+                            type: array
+                            items:
+                              type: string
+                          name:
+                            type: string
+                          names:
+                            type: array
+                            items:
+                              type: string
             status:
               description: Status communicates the observed state of the SeccompProfile.
               type: object

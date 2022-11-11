@@ -18,6 +18,7 @@ package seccompprofile
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -40,7 +41,7 @@ var _ seccompprofilereconciler.Interface = (*Reconciler)(nil)
 // ReconcileKind implements Interface.ReconcileKind.
 func (r *Reconciler) ReconcileKind(ctx context.Context, p *v1alpha1.SeccompProfile) reconciler.Event {
 	logger := logging.FromContext(ctx)
-	logger.Infof("reconciling %s; contents: %s", p.Name, string(p.Spec.Contents))
+	logger.Infof("reconciling %s", p.Name)
 
 	// Validate again just to be sure.
 	if err := p.Validate(ctx); err != nil {
@@ -49,8 +50,13 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, p *v1alpha1.SeccompProfi
 
 	// Write policy contents to localhost.
 	fn := fmt.Sprintf("%s/%s.json", path, p.Name)
-	if err := os.WriteFile(fn, p.Spec.Contents, 0600); err != nil {
-		return fmt.Errorf("error writing %s.json: %w", fn, err)
+	f, err := os.Create(fn)
+	if err != nil {
+		return fmt.Errorf("error creating %s: %w", fn, err)
+	}
+	defer f.Close()
+	if err := json.NewEncoder(f).Encode(&p.Spec.Contents); err != nil {
+		return fmt.Errorf("error writing %s: %w", fn, err)
 	}
 	logger.Infof("wrote %s.json", fn)
 

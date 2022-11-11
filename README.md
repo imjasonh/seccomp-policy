@@ -30,13 +30,31 @@ controller-ssshb           1/1     Running   0          11m
 webhook-65f995489c-chvll   1/1     Running   0          22m
 ```
 
-Create a `SeccompProfile` resource:
+Create some `SeccompProfile` resources:
 
 ```
-$ kubectl apply -f profiles/audit.yaml
-seccompprofile.seccomp.imjasonh.dev/2aff5d4800d3c60f930b6f10188bc2ca4d366359246bec86de6dc0d6ed61d818 unchanged
+$ kubectl apply -f profiles/
+seccompprofile.seccomp.imjasonh.dev/audit unchanged
+seccompprofile.seccomp.imjasonh.dev/fine-grained unchanged
+seccompprofile.seccomp.imjasonh.dev/violation unchanged
 ```
 
-(This one corresponds to the [`audit.json`](./profiles/audit.json) policy)
+Then create a Pod that uses the `audit` policy:
 
-This will result in the profile being synced to the necessary location on all nodes.
+```
+$ kubectl create -f pods/audit-pod.yaml
+pod/audit-pod-wczbg created
+$ kubectl get pod audit-pod-wczbg
+NAME              READY   STATUS      RESTARTS   AGE
+audit-pod-wczbg   0/1     Completed   0          9s
+```
+
+...and a Pod that uses the `violation` policy:
+
+```
+$ kubectl create -f pods/violation-pod.yaml
+pod/violation-pod-jsmkp created
+$ kubectl get pod violation-pod-jsmkp
+NAME                  READY   STATUS       RESTARTS   AGE
+violation-pod-jsmkp   0/1     StartError   0          4s
+```

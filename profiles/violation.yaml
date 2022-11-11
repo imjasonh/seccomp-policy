@@ -1,8 +1,8 @@
 apiVersion: seccomp.imjasonh.dev/v1alpha1
 kind: SeccompProfile
 metadata:
-  name: audit
+  name: violation
 spec:
   contents: {
-    "defaultAction": "SCMP_ACT_LOG"
-  }
+    "defaultAction": "SCMP_ACT_ERRNO"
+}

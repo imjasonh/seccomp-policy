@@ -55,12 +55,30 @@ var (
 // SeccompProfileSpec holds the desired state of the SeccompProfileSpec (from the client).
 type SeccompProfileSpec struct {
 	// Contents contains the contents of the policy as JSON.
-	Contents []byte `json:"contents"`
+	Contents *SeccompProfileJSON `json:"contents,omitempty"`
+}
+
+type SeccompProfileJSON struct {
+	DefaultAction Action                  `json:"defaultAction"`
+	Architectures []string                `json:"architectures,omitempty"`
+	Syscalls      []SeccompProfileSyscall `json:"syscalls,omitempty"`
+}
+
+type SeccompProfileSyscall struct {
+	Name   string   `json:"name"`
+	Names  []string `json:"names,omitempty"`
+	Action Action   `json:"action"`
+	Args   []string `json:"args,omitempty"`
 }
 
 // SeccompProfileStatus communicates the observed state of the SeccompProfile (from the controller).
 type SeccompProfileStatus struct {
 	duckv1.Status `json:",inline"`
+}
+
+// GetStatus retrieves the status of the resource. Implements the KRShaped interface.
+func (as *SeccompProfile) GetStatus() *duckv1.Status {
+	return &as.Status.Status
 }
 
 // SeccompProfileList is a list of SeccompProfile resources
@@ -72,9 +90,4 @@ type SeccompProfileList struct {
 	metav1.ListMeta `json:"metadata"`
 
 	Items []SeccompProfile `json:"items"`
-}
-
-// GetStatus retrieves the status of the resource. Implements the KRShaped interface.
-func (as *SeccompProfile) GetStatus() *duckv1.Status {
-	return &as.Status.Status
 }
