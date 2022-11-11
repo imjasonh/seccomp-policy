@@ -15,7 +15,7 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: defaulting.webhook.seccomp-profile.imjasonh.dev
+  name: defaulting.seccomp.imjasonh.dev
   labels:
     seccomp.imjasonh.dev/release: devel
 webhooks:
@@ -27,12 +27,12 @@ webhooks:
       namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: defaulting.webhook.seccomp-profile.imjasonh.dev
+  name: defaulting.seccomp.imjasonh.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: validation.webhook.seccomp-profile.imjasonh.dev
+  name: validation.seccomp.imjasonh.dev
   labels:
     seccomp.imjasonh.dev/release: devel
 webhooks:
@@ -44,12 +44,12 @@ webhooks:
       namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: validation.webhook.seccomp-profile.imjasonh.dev
+  name: validation.seccomp.imjasonh.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: config.webhook.seccomp-profile.imjasonh.dev
+  name: config.seccomp.imjasonh.dev
   labels:
     serving.knative.dev/release: devel
 webhooks:
@@ -61,11 +61,33 @@ webhooks:
       namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: config.webhook.seccomp-profile.imjasonh.dev
+  name: config.seccomp.imjasonh.dev
   namespaceSelector:
     matchExpressions:
     - key: seccomp.imjasonh.dev/release
       operator: Exists
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: mutating.seccomp.imjasonh.dev
+webhooks:
+- name: mutating.seccomp.imjasonh.dev
+  namespaceSelector:
+    # The webhook should only apply to things that opt-in
+    matchExpressions:
+    - key: seccomp.imjasonh.dev/include
+      operator: In
+      values: ["true"]
+  admissionReviewVersions: [v1]
+  clientConfig:
+    service:
+      name: webhook
+      namespace: seccomp-profile
+  failurePolicy: Fail
+  sideEffects: NoneOnDryRun
+  timeoutSeconds: 25
+  reinvocationPolicy: IfNeeded
 ---
 apiVersion: v1
 kind: Secret

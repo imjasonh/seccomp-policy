@@ -46,7 +46,7 @@ rules:
   - apiGroups: ["admissionregistration.k8s.io"]
     resources: ["validatingwebhookconfigurations"]
     verbs: ["get", "update"]
-    resourceNames: ["config.webhook.seccomp-profile.imjasonh.dev", "validation.webhook.seccomp-profile.imjasonh.dev"]
+    resourceNames: ["config.seccomp.imjasonh.dev", "validation.seccomp.imjasonh.dev"]
 
   # Allow the reconciliation of exactly our mutating webhooks.
   # This is needed for us to patch in caBundle information.
@@ -56,7 +56,7 @@ rules:
   - apiGroups: ["admissionregistration.k8s.io"]
     resources: ["mutatingwebhookconfigurations"]
     verbs: ["get", "update"]
-    resourceNames: ["defaulting.webhook.seccomp-profile.imjasonh.dev"]
+    resourceNames: ["defaulting.seccomp.imjasonh.dev", "mutating.seccomp.imjasonh.dev"]
 
   # Allow the reconciliation of exactly our CRDs.
   # This is needed for us to patch in conversion webhook information.
@@ -79,6 +79,14 @@ rules:
     resources: ["namespaces"]
     verbs: ["get"]
     resourceNames: ["seccomp-profile"]
+
+  # This is needed by the keychain to support fetching pull secrets attached to pod specs
+  # or their service accounts.  If pull secrets aren't used, the "secrets" below can
+  # be safely dropped, but the logic will fetch the service account to check for pull
+  # secrets.
+  - apiGroups: [""]
+    resources: ["serviceaccounts", "secrets"]
+    verbs: ["get"]
 
 ---
 kind: ClusterRole

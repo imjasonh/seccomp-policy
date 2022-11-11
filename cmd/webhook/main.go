@@ -18,16 +18,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/metrics"
 	"knative.dev/pkg/signals"
-	"knative.dev/pkg/system"
 	"knative.dev/pkg/webhook"
 	"knative.dev/pkg/webhook/certificates"
 	"knative.dev/pkg/webhook/configmaps"
@@ -36,6 +41,7 @@ import (
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
 	"github.com/imjasonh/seccomp-profile/pkg/apis/seccomp/v1alpha1"
+	pwebhook "github.com/imjasonh/seccomp-profile/pkg/webhook"
 )
 
 var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
@@ -49,7 +55,7 @@ func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher
 	return defaulting.NewAdmissionController(ctx,
 
 		// Name of the resource webhook.
-		fmt.Sprintf("defaulting.webhook.%s.knative.dev", system.Namespace()),
+		"defaulting.seccomp.imjasonh.dev",
 
 		// The path on which to serve the webhook.
 		"/defaulting",
@@ -73,7 +79,7 @@ func NewValidationAdmissionController(ctx context.Context, cmw configmap.Watcher
 	return validation.NewAdmissionController(ctx,
 
 		// Name of the resource webhook.
-		fmt.Sprintf("validation.webhook.%s.imjasonh.dev", system.Namespace()),
+		"validation.seccomp.imjasonh.dev",
 
 		// The path on which to serve the webhook.
 		"/resource-validation",
@@ -100,7 +106,7 @@ func NewConfigValidationController(ctx context.Context, cmw configmap.Watcher) *
 	return configmaps.NewAdmissionController(ctx,
 
 		// Name of the configmap webhook.
-		fmt.Sprintf("config.webhook.%s.imjasonh.dev", system.Namespace()),
+		"config.seccomp.imjasonh.dev",
 
 		// The path on which to serve the webhook.
 		"/config-validation",
@@ -110,6 +116,83 @@ func NewConfigValidationController(ctx context.Context, cmw configmap.Watcher) *
 			logging.ConfigMapName(): logging.NewConfigFromConfigMap,
 			metrics.ConfigMapName(): metrics.NewObservabilityConfigFromConfigMap,
 		},
+	)
+}
+
+var (
+	_ resourcesemantics.SubResourceLimited = (*crdNoStatusUpdatesOrDeletes)(nil)
+	_ resourcesemantics.VerbLimited        = (*crdNoStatusUpdatesOrDeletes)(nil)
+
+	_ resourcesemantics.SubResourceLimited = (*crdEphemeralContainers)(nil)
+	_ resourcesemantics.VerbLimited        = (*crdEphemeralContainers)(nil)
+)
+
+type crdNoStatusUpdatesOrDeletes struct {
+	resourcesemantics.GenericCRD
+}
+
+type crdEphemeralContainers struct {
+	resourcesemantics.GenericCRD
+}
+
+func (c *crdNoStatusUpdatesOrDeletes) SupportedSubResources() []string {
+	// We do not want any updates that are for status, scale, or anything else.
+	return []string{""}
+}
+
+func (c *crdEphemeralContainers) SupportedSubResources() []string {
+	return []string{"/ephemeralcontainers", ""}
+}
+
+func (c *crdNoStatusUpdatesOrDeletes) SupportedVerbs() []admissionregistrationv1.OperationType {
+	return []admissionregistrationv1.OperationType{
+		admissionregistrationv1.Create,
+		admissionregistrationv1.Update,
+	}
+}
+
+func (c *crdEphemeralContainers) SupportedVerbs() []admissionregistrationv1.OperationType {
+	return []admissionregistrationv1.OperationType{
+		admissionregistrationv1.Create,
+		admissionregistrationv1.Update,
+	}
+}
+
+func NewMutatingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+	kc := kubeclient.Get(ctx)
+	validator := pwebhook.NewValidator(ctx)
+
+	return defaulting.NewAdmissionController(ctx,
+		// Name of the resource webhook.
+		"mutating.seccomp.imjasonh.dev",
+
+		// The path on which to serve the webhook.
+		"/mutations",
+
+		// The resources to validate.
+		map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
+			corev1.SchemeGroupVersion.WithKind("Pod"):           &crdEphemeralContainers{GenericCRD: &duckv1.Pod{}},
+			appsv1.SchemeGroupVersion.WithKind("ReplicaSet"):    &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.WithPod{}},
+			appsv1.SchemeGroupVersion.WithKind("Deployment"):    &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.WithPod{}},
+			appsv1.SchemeGroupVersion.WithKind("StatefulSet"):   &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.WithPod{}},
+			appsv1.SchemeGroupVersion.WithKind("DaemonSet"):     &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.WithPod{}},
+			batchv1.SchemeGroupVersion.WithKind("Job"):          &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.WithPod{}},
+			batchv1.SchemeGroupVersion.WithKind("CronJob"):      &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.CronJob{}},
+			batchv1beta1.SchemeGroupVersion.WithKind("CronJob"): &crdNoStatusUpdatesOrDeletes{GenericCRD: &duckv1.CronJob{}},
+		},
+
+		// A function that infuses the context passed to Validate/SetDefaults with custom metadata.
+		func(ctx context.Context) context.Context {
+			ctx = context.WithValue(ctx, kubeclient.Key{}, kc)
+			ctx = duckv1.WithPodDefaulter(ctx, validator.ResolvePod)
+			ctx = duckv1.WithPodSpecDefaulter(ctx, validator.ResolvePodSpecable)
+			ctx = duckv1.WithCronJobDefaulter(ctx, validator.ResolveCronJob)
+			return ctx
+		},
+
+		// Whether to disallow unknown fields.
+		// We pass false because we're using partial schemas.
+		false,
 	)
 }
 
@@ -125,5 +208,6 @@ func main() {
 		NewDefaultingAdmissionController,
 		NewValidationAdmissionController,
 		NewConfigValidationController,
+		NewMutatingAdmissionController,
 	)
 }
