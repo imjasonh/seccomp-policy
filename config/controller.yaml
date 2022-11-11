@@ -34,7 +34,7 @@ spec:
       - name: profiles
         hostPath:
           path: /var/lib/kubelet/seccomp/profiles  # If the kubelet path is different, change it here.
-          type: Directory
+          type: DirectoryOrCreate
       containers:
       - name: controller
         image: ko://github.com/imjasonh/seccomp-profile/cmd/controller
