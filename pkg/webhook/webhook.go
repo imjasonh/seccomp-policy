@@ -18,6 +18,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/authn/kubernetes"
@@ -173,64 +174,71 @@ func (v *Validator) resolvePodSpec(ctx context.Context, ps *corev1.PodSpec, opt 
 	resolveEphemeralContainers(ps.EphemeralContainers)
 
 	// If there's only one container, and there isn't already a seccompProfile specified, try to extract the image's seccomp policy.
+	// TODO: If multiple images each specify a seccomp profile, generate a policy that is the union of those policies.
 	if len(ps.InitContainers) == 0 &&
 		len(ps.EphemeralContainers) == 0 &&
 		len(ps.Containers) == 1 &&
 		(ps.SecurityContext == nil || ps.SecurityContext.SeccompProfile == nil) {
-
-		if desc == nil {
-			logger.Warn("BUG: Expected descriptor to already be populated")
-			return
-		}
-
-		b, err := desc.RawManifest()
-		if err != nil {
-			logger.Errorf("Unable to get raw manifest: %v", err)
-			return
-		}
-		var mf struct {
-			Annotations map[string]string `json:"annotations"`
-		}
-		if err := json.Unmarshal(b, &mf); err != nil {
-			logger.Errorf("Unable to parse manifest: %v", err)
-			return
-		}
-		v, ok := mf.Annotations["seccomp.imjasonh.dev/profile"]
-		if !ok {
-			logger.Infof("Image %s specified no seccomp profile", desc.Digest.String())
-			return
-		}
-		logger.Infof("!!! Image %s specified a seccomp profile!", desc.Digest.String())
-
-		var p v1alpha1.SeccompProfileJSON
-		if err := json.Unmarshal([]byte(v), &p); err != nil {
-			logger.Errorf("Image %s specified unparseable seccomp profile", desc.Digest.String())
-			return
-		}
-		name := sha(v)
-		if _, err := v1alpha1client.Get(ctx).SeccompV1alpha1().SeccompProfiles().Create(ctx, &v1alpha1.SeccompProfile{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: name,
-			},
-			Spec: v1alpha1.SeccompProfileSpec{
-				Contents: &p,
-			},
-		}, metav1.CreateOptions{}); k8serrors.IsAlreadyExists(err) {
-			// Ignore.
-		} else if err != nil {
-			logger.Errorf("Error creating SeccompPolicy %q: %v", name, err)
-			return
-		}
-		logger.Infof("Created or updated SeccompPolicy %q", name)
-
-		if ps.SecurityContext == nil {
-			ps.SecurityContext = &corev1.PodSecurityContext{}
-		}
-		ps.SecurityContext.SeccompProfile = &corev1.SeccompProfile{
-			Type:             corev1.SeccompProfileTypeLocalhost,
-			LocalhostProfile: pointer.String(fmt.Sprintf("profiles/%s.json", name)),
+		if err := mutatePodSpec(ctx, desc, ps); err != nil {
+			logger.Errorf("Error mutating PodSpec: %v", err)
 		}
 	}
+}
+
+func mutatePodSpec(ctx context.Context, desc *remote.Descriptor, ps *corev1.PodSpec) error {
+	logger := logging.FromContext(ctx)
+
+	if desc == nil {
+		return errors.New("BUG: Expected descriptor to already be populated")
+	}
+
+	b, err := desc.RawManifest()
+	if err != nil {
+		return fmt.Errorf("unable to get raw manifest: %w", err)
+	}
+	var mf struct {
+		Annotations map[string]string `json:"annotations"`
+	}
+	if err := json.Unmarshal(b, &mf); err != nil {
+		return fmt.Errorf("unable to parse manifest: %w", err)
+	}
+	v, ok := mf.Annotations["seccomp.imjasonh.dev/profile"]
+	if !ok {
+		logger.Infof("Image %s specified no seccomp profile", desc.Digest.String())
+		return nil
+	}
+	logger.Infof("!!! Image %s specified a seccomp profile!", desc.Digest.String())
+
+	var p v1alpha1.SeccompProfileJSON
+	if err := json.Unmarshal([]byte(v), &p); err != nil {
+		return fmt.Errorf("image %s specified unparseable seccomp profile", desc.Digest.String())
+	}
+	name := sha(v)
+	if _, err := v1alpha1client.Get(ctx).SeccompV1alpha1().SeccompProfiles().Create(ctx, &v1alpha1.SeccompProfile{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: v1alpha1.SeccompProfileSpec{
+			Contents: &p,
+		},
+	}, metav1.CreateOptions{}); k8serrors.IsAlreadyExists(err) {
+		// Ignore.
+		logger.Infof("SeccompProfile %q already exists", name)
+	} else if err != nil {
+		return fmt.Errorf("error creating SeccompProfile %q for image %s: %w", name, desc.Digest.String(), err)
+	} else {
+		logger.Infof("Created SeccompProfile %q", name)
+	}
+
+	if ps.SecurityContext == nil {
+		ps.SecurityContext = &corev1.PodSecurityContext{}
+	}
+	ps.SecurityContext.SeccompProfile = &corev1.SeccompProfile{
+		Type:             corev1.SeccompProfileTypeLocalhost,
+		LocalhostProfile: pointer.String(fmt.Sprintf("profiles/%s.json", name)),
+	}
+	logger.Info("Updated PodSpec with SeccompProfile")
+	return nil
 }
 
 func sha(s string) string {
