@@ -4,13 +4,21 @@
 
 This is a work in progress.
 
-## Testing
+This provides a CRD and controller components to distribute seccomp profiles to nodes, automating the process described in Kubernetes docs: https://kubernetes.io/docs/tutorials/security/seccomp
+
+Seccomp profiles allow users to audit or limit system calls ("syscalls") used by containers.
+
+## Try it out
+
+If you don't have a cluster, you can create one with KinD:
 
 ```
 kind create cluster --config=kind.yaml
 ```
 
-This will create a KinD cluster with built-in seccomp profiles as described here: https://kubernetes.io/docs/tutorials/security/seccomp
+This creates a cluster with 2 worker nodes, to demonstrate that profiles are distributed to _every_ node.
+
+I've also tested this on a GKE cluster.
 
 Then install the components:
 
@@ -58,3 +66,10 @@ $ kubectl get pod violation-pod-jsmkp
 NAME                  READY   STATUS       RESTARTS   AGE
 violation-pod-jsmkp   0/1     StartError   0          4s
 ```
+
+## Future Work
+
+Container images could distribute their seccomp profiles in their metadata.
+If they did, the webhook component could extract these profiles from incoming images, and create `SeccompPolicy` resources, and mutate `PodSpec`s to use those policies.
+
+An image build tool could determine the seccomp profile based on source analysis, or hand-curated overrides, and distribute those profiles with the image.
