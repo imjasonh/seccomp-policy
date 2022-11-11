@@ -19,8 +19,8 @@ package seccompprofile
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
+	"os/user"
 
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
@@ -35,10 +35,16 @@ func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
+	logger := logging.FromContext(ctx)
 
 	// Do a quick check that we can list the local directory.
+	if u, err := user.Current(); err != nil {
+		logger.Fatalf("Failed to get current user: %v", err)
+	} else {
+		logger.Infof("Running as user %s (uid=%s gid=%s)", u.Username, u.Uid, u.Gid)
+	}
 	if err := listFiles(ctx); err != nil {
-		log.Fatalf("Failed to list files: %v", err)
+		logger.Fatalf("Failed to list files: %v", err)
 	}
 
 	informer := seccompprofileinformer.Get(ctx)

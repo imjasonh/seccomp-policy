@@ -64,4 +64,4 @@ spec:
           value: imjasonh.dev/seccomp
         securityContext:
           allowPrivilegeEscalation: false
-          runAsNonRoot: true
+          runAsUser: 0  # TODO: Don't run as root.
