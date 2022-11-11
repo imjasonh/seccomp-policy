@@ -13,14 +13,13 @@
 # limitations under the License.
 
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: controller
   namespace: seccomp-profile
   labels:
     seccomp.imjasonh.dev/release: devel
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: controller
@@ -30,22 +29,9 @@ spec:
         app: controller
         seccomp.imjasonh.dev/release: devel
     spec:
-      # To avoid node becoming SPOF, spread our replicas to different nodes.
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app: controller
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-
       serviceAccountName: controller
       containers:
       - name: controller
-        # This is the Go import path for the binary that is containerized
-        # and substituted here.
         image: ko://github.com/imjasonh/seccomp-profile/cmd/controller
         resources:
           requests:
