@@ -3,4 +3,5 @@ kind: SeccompProfile
 metadata:
   name: 2aff5d4800d3c60f930b6f10188bc2ca4d366359246bec86de6dc0d6ed61d818
 spec:
+  # TODO: Inline JSON string? Accept YAML form?
   contents: eyJkZWZhdWx0QWN0aW9uIjogIlNDTVBfQUNUX0xPRyJ9

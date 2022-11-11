@@ -48,10 +48,11 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, p *v1alpha1.SeccompProfi
 	}
 
 	// Write policy contents to localhost.
-	if err := os.WriteFile(fmt.Sprintf("%s.json", p.Name), p.Spec.Contents, 0600); err != nil {
-		return fmt.Errorf("error writing %s.json: %w", p.Name, err)
+	fn := fmt.Sprintf("%s/%s.json", path, p.Name)
+	if err := os.WriteFile(fn, p.Spec.Contents, 0600); err != nil {
+		return fmt.Errorf("error writing %s.json: %w", fn, err)
 	}
-	logger.Infof("wrote %s.json", p.Name)
+	logger.Infof("wrote %s.json", fn)
 
 	// TODO: Detect deleted policies and delete files.
 	return nil

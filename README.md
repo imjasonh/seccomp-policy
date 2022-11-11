@@ -33,10 +33,10 @@ webhook-65f995489c-chvll   1/1     Running   0          22m
 Create a `SeccompProfile` resource:
 
 ```
-$ kubectl apply -f policies/audit.yaml
+$ kubectl apply -f profiles/audit.yaml
 seccompprofile.seccomp.imjasonh.dev/2aff5d4800d3c60f930b6f10188bc2ca4d366359246bec86de6dc0d6ed61d818 unchanged
 ```
 
-(This one corresponds to the [`audit.json`](./policies/audit.json) policy)
+(This one corresponds to the [`audit.json`](./profiles/audit.json) policy)
 
 This will result in the profile being synced to the necessary location on all nodes.
