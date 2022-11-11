@@ -29,6 +29,11 @@ spec:
         app: controller
         seccomp.imjasonh.dev/release: devel
     spec:
+      tolerations:
+      - key: kubernetes.io/arch
+        operator: Equal
+        value: arm64
+        effect: NoSchedule
       serviceAccountName: controller
       volumes:
       - name: profiles
