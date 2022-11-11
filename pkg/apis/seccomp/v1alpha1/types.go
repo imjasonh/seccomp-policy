@@ -26,6 +26,7 @@ import (
 // SeccompProfile represents a seccomp profile to distribute to nodes.
 //
 // +genclient
+// +genclient:nonNamespaced
 // +genreconciler
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SeccompProfile struct {
@@ -64,6 +65,7 @@ type SeccompProfileStatus struct {
 
 // SeccompProfileList is a list of SeccompProfile resources
 //
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type SeccompProfileList struct {
 	metav1.TypeMeta `json:",inline"`

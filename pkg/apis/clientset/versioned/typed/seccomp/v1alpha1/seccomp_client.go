@@ -36,8 +36,8 @@ type SeccompV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *SeccompV1alpha1Client) SeccompProfiles(namespace string) SeccompProfileInterface {
-	return newSeccompProfiles(c, namespace)
+func (c *SeccompV1alpha1Client) SeccompProfiles() SeccompProfileInterface {
+	return newSeccompProfiles(c)
 }
 
 // NewForConfig creates a new SeccompV1alpha1Client for the given config.

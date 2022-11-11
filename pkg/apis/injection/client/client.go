@@ -111,22 +111,18 @@ func (w *wrapSeccompV1alpha1) RESTClient() rest.Interface {
 	panic("RESTClient called on dynamic client!")
 }
 
-func (w *wrapSeccompV1alpha1) SeccompProfiles(namespace string) typedseccompv1alpha1.SeccompProfileInterface {
+func (w *wrapSeccompV1alpha1) SeccompProfiles() typedseccompv1alpha1.SeccompProfileInterface {
 	return &wrapSeccompV1alpha1SeccompProfileImpl{
 		dyn: w.dyn.Resource(schema.GroupVersionResource{
 			Group:    "seccomp.imjasonh.dev",
 			Version:  "v1alpha1",
 			Resource: "seccompprofiles",
 		}),
-
-		namespace: namespace,
 	}
 }
 
 type wrapSeccompV1alpha1SeccompProfileImpl struct {
 	dyn dynamic.NamespaceableResourceInterface
-
-	namespace string
 }
 
 var _ typedseccompv1alpha1.SeccompProfileInterface = (*wrapSeccompV1alpha1SeccompProfileImpl)(nil)
@@ -141,7 +137,7 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) Create(ctx context.Context, in *
 	if err := convert(in, uo); err != nil {
 		return nil, err
 	}
-	uo, err := w.dyn.Namespace(w.namespace).Create(ctx, uo, opts)
+	uo, err := w.dyn.Create(ctx, uo, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -153,15 +149,15 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) Create(ctx context.Context, in *
 }
 
 func (w *wrapSeccompV1alpha1SeccompProfileImpl) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return w.dyn.Namespace(w.namespace).Delete(ctx, name, opts)
+	return w.dyn.Delete(ctx, name, opts)
 }
 
 func (w *wrapSeccompV1alpha1SeccompProfileImpl) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	return w.dyn.Namespace(w.namespace).DeleteCollection(ctx, opts, listOpts)
+	return w.dyn.DeleteCollection(ctx, opts, listOpts)
 }
 
 func (w *wrapSeccompV1alpha1SeccompProfileImpl) Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.SeccompProfile, error) {
-	uo, err := w.dyn.Namespace(w.namespace).Get(ctx, name, opts)
+	uo, err := w.dyn.Get(ctx, name, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +169,7 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) Get(ctx context.Context, name st
 }
 
 func (w *wrapSeccompV1alpha1SeccompProfileImpl) List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.SeccompProfileList, error) {
-	uo, err := w.dyn.Namespace(w.namespace).List(ctx, opts)
+	uo, err := w.dyn.List(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +181,7 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) List(ctx context.Context, opts v
 }
 
 func (w *wrapSeccompV1alpha1SeccompProfileImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.SeccompProfile, err error) {
-	uo, err := w.dyn.Namespace(w.namespace).Patch(ctx, name, pt, data, opts)
+	uo, err := w.dyn.Patch(ctx, name, pt, data, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +202,7 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) Update(ctx context.Context, in *
 	if err := convert(in, uo); err != nil {
 		return nil, err
 	}
-	uo, err := w.dyn.Namespace(w.namespace).Update(ctx, uo, opts)
+	uo, err := w.dyn.Update(ctx, uo, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +223,7 @@ func (w *wrapSeccompV1alpha1SeccompProfileImpl) UpdateStatus(ctx context.Context
 	if err := convert(in, uo); err != nil {
 		return nil, err
 	}
-	uo, err := w.dyn.Namespace(w.namespace).UpdateStatus(ctx, uo, opts)
+	uo, err := w.dyn.UpdateStatus(ctx, uo, opts)
 	if err != nil {
 		return nil, err
 	}

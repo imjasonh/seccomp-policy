@@ -41,5 +41,5 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // SeccompProfiles returns a SeccompProfileInformer.
 func (v *version) SeccompProfiles() SeccompProfileInformer {
-	return &seccompProfileInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &seccompProfileInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }

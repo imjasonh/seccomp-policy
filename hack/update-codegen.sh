@@ -29,9 +29,6 @@ echo "=== Update Codegen for ${MODULE_NAME}"
 
 group "Kubernetes Codegen"
 
-echo CODEGEN_PKG ${CODEGEN_PKG}
-echo REPO_ROOT_DIR ${REPO_ROOT_DIR}
-
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir

@@ -89,8 +89,6 @@ func Get(ctx context.Context, selector string) v1alpha1.SeccompProfileInformer {
 type wrapper struct {
 	client versioned.Interface
 
-	namespace string
-
 	selector string
 }
 
@@ -105,17 +103,13 @@ func (w *wrapper) Lister() seccompv1alpha1.SeccompProfileLister {
 	return w
 }
 
-func (w *wrapper) SeccompProfiles(namespace string) seccompv1alpha1.SeccompProfileNamespaceLister {
-	return &wrapper{client: w.client, namespace: namespace, selector: w.selector}
-}
-
 func (w *wrapper) List(selector labels.Selector) (ret []*apisseccompv1alpha1.SeccompProfile, err error) {
 	reqs, err := labels.ParseToRequirements(w.selector)
 	if err != nil {
 		return nil, err
 	}
 	selector = selector.Add(reqs...)
-	lo, err := w.client.SeccompV1alpha1().SeccompProfiles(w.namespace).List(context.TODO(), v1.ListOptions{
+	lo, err := w.client.SeccompV1alpha1().SeccompProfiles().List(context.TODO(), v1.ListOptions{
 		LabelSelector: selector.String(),
 		// TODO(mattmoor): Incorporate resourceVersion bounds based on staleness criteria.
 	})
@@ -130,7 +124,7 @@ func (w *wrapper) List(selector labels.Selector) (ret []*apisseccompv1alpha1.Sec
 
 func (w *wrapper) Get(name string) (*apisseccompv1alpha1.SeccompProfile, error) {
 	// TODO(mattmoor): Check that the fetched object matches the selector.
-	return w.client.SeccompV1alpha1().SeccompProfiles(w.namespace).Get(context.TODO(), name, v1.GetOptions{
+	return w.client.SeccompV1alpha1().SeccompProfiles().Get(context.TODO(), name, v1.GetOptions{
 		// TODO(mattmoor): Incorporate resourceVersion bounds based on staleness criteria.
 	})
 }

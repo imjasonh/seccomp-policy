@@ -17,15 +17,14 @@ limitations under the License.
 package main
 
 import (
-	// The set of controllers this controller process runs.
-	"github.com/imjasonh/seccomp-profile/pkg/reconciler/seccompprofile"
+	"context"
 
-	// This defines the shared main for injected controllers.
+	"github.com/imjasonh/seccomp-profile/pkg/reconciler/seccompprofile"
 	"knative.dev/pkg/injection/sharedmain"
 )
 
 func main() {
-	sharedmain.Main("controller",
+	sharedmain.MainWithContext(sharedmain.WithHADisabled(context.Background()), "controller",
 		seccompprofile.NewController,
 	)
 }

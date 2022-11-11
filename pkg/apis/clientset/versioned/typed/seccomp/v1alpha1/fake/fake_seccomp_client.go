@@ -28,8 +28,8 @@ type FakeSeccompV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeSeccompV1alpha1) SeccompProfiles(namespace string) v1alpha1.SeccompProfileInterface {
-	return &FakeSeccompProfiles{c, namespace}
+func (c *FakeSeccompV1alpha1) SeccompProfiles() v1alpha1.SeccompProfileInterface {
+	return &FakeSeccompProfiles{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

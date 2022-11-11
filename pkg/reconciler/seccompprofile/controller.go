@@ -18,9 +18,13 @@ package seccompprofile
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"os"
 
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/logging"
 
 	seccompprofileinformer "github.com/imjasonh/seccomp-profile/pkg/apis/injection/informers/seccomp/v1alpha1/seccompprofile"
 	seccompprofilereconciler "github.com/imjasonh/seccomp-profile/pkg/apis/injection/reconciler/seccomp/v1alpha1/seccompprofile"
@@ -31,10 +35,29 @@ func NewController(
 	ctx context.Context,
 	cmw configmap.Watcher,
 ) *controller.Impl {
+
+	// Do a quick check that we can list the local directory.
+	if err := listFiles(ctx); err != nil {
+		log.Fatalf("Failed to list files: %v", err)
+	}
+
 	informer := seccompprofileinformer.Get(ctx)
 
 	r := &Reconciler{}
 	impl := seccompprofilereconciler.NewImpl(ctx, r)
 	informer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 	return impl
+}
+
+func listFiles(ctx context.Context) error {
+	logger := logging.FromContext(ctx)
+
+	fis, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("failed to list files: %w", err)
+	}
+	for _, fi := range fis {
+		logger.Infof("- %s", fi.Name())
+	}
+	return nil
 }

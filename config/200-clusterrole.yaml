@@ -36,7 +36,7 @@ rules:
   # Allow creating events associated with resources we are controlling.
   - apiGroups: [""]
     resources: ["events"]
-    verbs: ["create"]
+    verbs: ["create", "patch"]
 
   # Allow the reconciliation of exactly our validating webhooks.
   # This is needed for us to patch in caBundle information.

@@ -31,8 +31,9 @@ type SeccompProfileLister interface {
 	// List lists all SeccompProfiles in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.SeccompProfile, err error)
-	// SeccompProfiles returns an object that can list and get SeccompProfiles.
-	SeccompProfiles(namespace string) SeccompProfileNamespaceLister
+	// Get retrieves the SeccompProfile from the index for a given name.
+	// Objects returned here must be treated as read-only.
+	Get(name string) (*v1alpha1.SeccompProfile, error)
 	SeccompProfileListerExpansion
 }
 
@@ -54,41 +55,9 @@ func (s *seccompProfileLister) List(selector labels.Selector) (ret []*v1alpha1.S
 	return ret, err
 }
 
-// SeccompProfiles returns an object that can list and get SeccompProfiles.
-func (s *seccompProfileLister) SeccompProfiles(namespace string) SeccompProfileNamespaceLister {
-	return seccompProfileNamespaceLister{indexer: s.indexer, namespace: namespace}
-}
-
-// SeccompProfileNamespaceLister helps list and get SeccompProfiles.
-// All objects returned here must be treated as read-only.
-type SeccompProfileNamespaceLister interface {
-	// List lists all SeccompProfiles in the indexer for a given namespace.
-	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.SeccompProfile, err error)
-	// Get retrieves the SeccompProfile from the indexer for a given namespace and name.
-	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.SeccompProfile, error)
-	SeccompProfileNamespaceListerExpansion
-}
-
-// seccompProfileNamespaceLister implements the SeccompProfileNamespaceLister
-// interface.
-type seccompProfileNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all SeccompProfiles in the indexer for a given namespace.
-func (s seccompProfileNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.SeccompProfile, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.SeccompProfile))
-	})
-	return ret, err
-}
-
-// Get retrieves the SeccompProfile from the indexer for a given namespace and name.
-func (s seccompProfileNamespaceLister) Get(name string) (*v1alpha1.SeccompProfile, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
+// Get retrieves the SeccompProfile from the index for a given name.
+func (s *seccompProfileLister) Get(name string) (*v1alpha1.SeccompProfile, error) {
+	obj, exists, err := s.indexer.GetByKey(name)
 	if err != nil {
 		return nil, err
 	}

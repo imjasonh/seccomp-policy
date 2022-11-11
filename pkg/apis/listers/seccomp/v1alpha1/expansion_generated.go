@@ -21,7 +21,3 @@ package v1alpha1
 // SeccompProfileListerExpansion allows custom methods to be added to
 // SeccompProfileLister.
 type SeccompProfileListerExpansion interface{}
-
-// SeccompProfileNamespaceListerExpansion allows custom methods to be added to
-// SeccompProfileNamespaceLister.
-type SeccompProfileNamespaceListerExpansion interface{}

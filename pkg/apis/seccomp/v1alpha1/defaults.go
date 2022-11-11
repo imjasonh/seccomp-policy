@@ -22,5 +22,5 @@ import (
 
 // SetDefaults implements apis.Defaultable
 func (as *SeccompProfile) SetDefaults(ctx context.Context) {
-	// Nothing to default.
+	// TODO: uniformly pretty-print or un-pretty-print to avoid semantic duplicates that only differ by whitespace.
 }

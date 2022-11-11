@@ -33,7 +33,7 @@ import (
 // SeccompProfilesGetter has a method to return a SeccompProfileInterface.
 // A group's client should implement this interface.
 type SeccompProfilesGetter interface {
-	SeccompProfiles(namespace string) SeccompProfileInterface
+	SeccompProfiles() SeccompProfileInterface
 }
 
 // SeccompProfileInterface has methods to work with SeccompProfile resources.
@@ -53,14 +53,12 @@ type SeccompProfileInterface interface {
 // seccompProfiles implements SeccompProfileInterface
 type seccompProfiles struct {
 	client rest.Interface
-	ns     string
 }
 
 // newSeccompProfiles returns a SeccompProfiles
-func newSeccompProfiles(c *SeccompV1alpha1Client, namespace string) *seccompProfiles {
+func newSeccompProfiles(c *SeccompV1alpha1Client) *seccompProfiles {
 	return &seccompProfiles{
 		client: c.RESTClient(),
-		ns:     namespace,
 	}
 }
 
@@ -68,7 +66,6 @@ func newSeccompProfiles(c *SeccompV1alpha1Client, namespace string) *seccompProf
 func (c *seccompProfiles) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.SeccompProfile, err error) {
 	result = &v1alpha1.SeccompProfile{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
@@ -85,7 +82,6 @@ func (c *seccompProfiles) List(ctx context.Context, opts v1.ListOptions) (result
 	}
 	result = &v1alpha1.SeccompProfileList{}
 	err = c.client.Get().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -102,7 +98,6 @@ func (c *seccompProfiles) Watch(ctx context.Context, opts v1.ListOptions) (watch
 	}
 	opts.Watch = true
 	return c.client.Get().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -113,7 +108,6 @@ func (c *seccompProfiles) Watch(ctx context.Context, opts v1.ListOptions) (watch
 func (c *seccompProfiles) Create(ctx context.Context, seccompProfile *v1alpha1.SeccompProfile, opts v1.CreateOptions) (result *v1alpha1.SeccompProfile, err error) {
 	result = &v1alpha1.SeccompProfile{}
 	err = c.client.Post().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(seccompProfile).
@@ -126,7 +120,6 @@ func (c *seccompProfiles) Create(ctx context.Context, seccompProfile *v1alpha1.S
 func (c *seccompProfiles) Update(ctx context.Context, seccompProfile *v1alpha1.SeccompProfile, opts v1.UpdateOptions) (result *v1alpha1.SeccompProfile, err error) {
 	result = &v1alpha1.SeccompProfile{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		Name(seccompProfile.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -141,7 +134,6 @@ func (c *seccompProfiles) Update(ctx context.Context, seccompProfile *v1alpha1.S
 func (c *seccompProfiles) UpdateStatus(ctx context.Context, seccompProfile *v1alpha1.SeccompProfile, opts v1.UpdateOptions) (result *v1alpha1.SeccompProfile, err error) {
 	result = &v1alpha1.SeccompProfile{}
 	err = c.client.Put().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		Name(seccompProfile.Name).
 		SubResource("status").
@@ -155,7 +147,6 @@ func (c *seccompProfiles) UpdateStatus(ctx context.Context, seccompProfile *v1al
 // Delete takes name of the seccompProfile and deletes it. Returns an error if one occurs.
 func (c *seccompProfiles) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		Name(name).
 		Body(&opts).
@@ -170,7 +161,6 @@ func (c *seccompProfiles) DeleteCollection(ctx context.Context, opts v1.DeleteOp
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
@@ -183,7 +173,6 @@ func (c *seccompProfiles) DeleteCollection(ctx context.Context, opts v1.DeleteOp
 func (c *seccompProfiles) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.SeccompProfile, err error) {
 	result = &v1alpha1.SeccompProfile{}
 	err = c.client.Patch(pt).
-		Namespace(c.ns).
 		Resource("seccompprofiles").
 		Name(name).
 		SubResource(subresources...).
