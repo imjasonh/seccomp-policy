@@ -29,32 +29,31 @@ echo "=== Update Codegen for ${MODULE_NAME}"
 
 group "Kubernetes Codegen"
 
+echo CODEGEN_PKG ${CODEGEN_PKG}
+echo REPO_ROOT_DIR ${REPO_ROOT_DIR}
+
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
-  knative.dev/sample-controller/pkg/client knative.dev/sample-controller/pkg/apis \
-  "samples:v1alpha1" \
+  github.com/imjasonh/seccomp-profile/pkg/apis github.com/imjasonh/seccomp-profile/pkg/apis\
+  "seccomp:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 group "Knative Codegen"
 
 # Knative Injection
 ${KNATIVE_CODEGEN_PKG}/hack/generate-knative.sh "injection" \
-  knative.dev/sample-controller/pkg/client knative.dev/sample-controller/pkg/apis \
-  "samples:v1alpha1" \
+  github.com/imjasonh/seccomp-profile/pkg/apis github.com/imjasonh/seccomp-profile/pkg/apis \
+  "seccomp:v1alpha1" \
   --go-header-file ${REPO_ROOT_DIR}/hack/boilerplate/boilerplate.go.txt
 
 group "Update CRD Schema"
 
-go run $(dirname $0)/../cmd/schema/ dump SimpleDeployment \
+go run $(dirname $0)/../cmd/schema/ dump SeccompProfile \
   | run_yq eval-all --header-preprocess=false --inplace 'select(fileIndex == 0).spec.versions[0].schema.openAPIV3Schema = select(fileIndex == 1) | select(fileIndex == 0)' \
-  $(dirname $0)/../config/300-simpledeployment.yaml -
-
-go run $(dirname $0)/../cmd/schema/ dump AddressableService \
-  | run_yq eval-all --header-preprocess=false --inplace 'select(fileIndex == 0).spec.versions[0].schema.openAPIV3Schema = select(fileIndex == 1) | select(fileIndex == 0)' \
-  $(dirname $0)/../config/300-addressableservice.yaml -
+  $(dirname $0)/../config/300-seccompprofile.yaml -
 
 group "Update deps post-codegen"
 

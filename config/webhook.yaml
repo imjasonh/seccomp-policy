@@ -16,9 +16,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: webhook
-  namespace: knative-samples
+  namespace: seccomp-profile
   labels:
-    samples.knative.dev/release: devel
+    seccomp.imjasonh.dev/release: devel
 spec:
   replicas: 1
   selector:
@@ -30,7 +30,7 @@ spec:
       labels:
         app: webhook
         role: webhook
-        samples.knative.dev/release: devel
+        seccomp.imjasonh.dev/release: devel
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
       affinity:
@@ -48,7 +48,7 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://knative.dev/sample-controller/cmd/webhook
+        image: ko://github.com/imjasonh/seccomp-profile/cmd/webhook
         resources:
           requests:
             cpu: 20m

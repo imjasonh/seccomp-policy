@@ -1,4 +1,4 @@
-module knative.dev/sample-controller
+module github.com/imjasonh/seccomp-profile
 
 go 1.18
 

@@ -15,41 +15,41 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: defaulting.webhook.knative-samples.knative.dev
+  name: defaulting.webhook.seccomp-profile.imjasonh.dev
   labels:
-    samples.knative.dev/release: devel
+    seccomp.imjasonh.dev/release: devel
 webhooks:
 - admissionReviewVersions:
   - v1beta1
   clientConfig:
     service:
       name: webhook
-      namespace: knative-samples
+      namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: defaulting.webhook.knative-samples.knative.dev
+  name: defaulting.webhook.seccomp-profile.imjasonh.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: validation.webhook.knative-samples.knative.dev
+  name: validation.webhook.seccomp-profile.imjasonh.dev
   labels:
-    samples.knative.dev/release: devel
+    seccomp.imjasonh.dev/release: devel
 webhooks:
 - admissionReviewVersions:
   - v1beta1
   clientConfig:
     service:
       name: webhook
-      namespace: knative-samples
+      namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: validation.webhook.knative-samples.knative.dev
+  name: validation.webhook.seccomp-profile.imjasonh.dev
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  name: config.webhook.knative-samples.knative.dev
+  name: config.webhook.seccomp-profile.imjasonh.dev
   labels:
     serving.knative.dev/release: devel
 webhooks:
@@ -58,20 +58,20 @@ webhooks:
   clientConfig:
     service:
       name: webhook
-      namespace: knative-samples
+      namespace: seccomp-profile
   failurePolicy: Fail
   sideEffects: None
-  name: config.webhook.knative-samples.knative.dev
+  name: config.webhook.seccomp-profile.imjasonh.dev
   namespaceSelector:
     matchExpressions:
-    - key: samples.knative.dev/release
+    - key: seccomp.imjasonh.dev/release
       operator: Exists
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: webhook-certs
-  namespace: knative-samples
+  namespace: seccomp-profile
   labels:
-    samples.knative.dev/release: devel
+    seccomp.imjasonh.dev/release: devel
 # The data is populated at install time.

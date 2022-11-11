@@ -26,8 +26,8 @@ readonly COMPONENTS
 function build_release() {
    # Update release labels if this is a tagged release
   if [[ -n "${TAG}" ]]; then
-    echo "Tagged release, updating release labels to samples.knative.dev/release: \"${TAG}\""
-    LABEL_YAML_CMD=(sed -e "s|samples.knative.dev/release: devel|samples.knative.dev/release: \"${TAG}\"|")
+    echo "Tagged release, updating release labels to seccomp.imjasonh.dev/release: \"${TAG}\""
+    LABEL_YAML_CMD=(sed -e "s|seccomp.imjasonh.dev/release: devel|seccomp.imjasonh.dev/release: \"${TAG}\"|")
   else
     echo "Untagged release, will NOT update release labels"
     LABEL_YAML_CMD=(cat)

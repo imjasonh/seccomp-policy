@@ -17,9 +17,9 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    samples.knative.dev/release: devel
+    seccomp.imjasonh.dev/release: devel
   name: webhook
-  namespace: knative-samples
+  namespace: seccomp-profile
 spec:
   ports:
     - port: 443

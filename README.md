@@ -1,14 +1,5 @@
-# Knative Sample Controller
+# Seccomp Profile Distribution Controller
 
-[![GoDoc](https://godoc.org/knative.dev/sample-controller?status.svg)](https://godoc.org/knative.dev/sample-controller)
-[![Go Report Card](https://goreportcard.com/badge/knative/sample-controller)](https://goreportcard.com/report/knative/sample-controller)
+[![GoDoc](https://godoc.org/github.com/imjasonh/seccomp-profile?status.svg)](https://godoc.org/github.com/imjasonh/seccomp-profile)
 
-Knative `sample-controller` defines a few simple resources that are validated by
-webhook and managed by a controller to demonstrate the canonical style in which
-Knative writes controllers.
-
-To learn more about Knative, please visit our
-[Knative docs](https://github.com/knative/docs) repository.
-
-If you are interested in contributing, see [CONTRIBUTING.md](./CONTRIBUTING.md)
-and [DEVELOPMENT.md](./DEVELOPMENT.md).
+This is a work in progress.
