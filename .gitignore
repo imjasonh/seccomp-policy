@@ -1,1 +1,5 @@
 profiles/*.json
+
+vendor/**/OWNERS
+vendor/**/BUILD.bazel
+vendor/**/OWNERS_ALIASES

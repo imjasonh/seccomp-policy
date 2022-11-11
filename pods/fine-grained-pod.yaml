@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: fine-grained-pod-
+spec:
+  securityContext:
+    seccompProfile:
+      type: Localhost
+      localhostProfile: profiles/fine-grained.json
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: cgr.dev/chainguard/busybox
+    command: ['sh', '-c', 'echo making some syscalls']
+    securityContext:
+      allowPrivilegeEscalation: false

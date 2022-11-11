@@ -77,8 +77,8 @@ type SeccompProfileStatus struct {
 }
 
 // GetStatus retrieves the status of the resource. Implements the KRShaped interface.
-func (as *SeccompProfile) GetStatus() *duckv1.Status {
-	return &as.Status.Status
+func (sp *SeccompProfile) GetStatus() *duckv1.Status {
+	return &sp.Status.Status
 }
 
 // SeccompProfileList is a list of SeccompProfile resources

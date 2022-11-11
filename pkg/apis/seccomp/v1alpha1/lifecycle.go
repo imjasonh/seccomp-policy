@@ -24,16 +24,16 @@ import (
 var condSet = apis.NewLivingConditionSet()
 
 // GetGroupVersionKind implements kmeta.OwnerRefable
-func (*SeccompProfile) GetGroupVersionKind() schema.GroupVersionKind {
+func (sp *SeccompProfile) GetGroupVersionKind() schema.GroupVersionKind {
 	return SchemeGroupVersion.WithKind("SeccompProfile")
 }
 
 // GetConditionSet retrieves the condition set for this resource. Implements the KRShaped interface.
-func (as *SeccompProfile) GetConditionSet() apis.ConditionSet {
+func (sp *SeccompProfile) GetConditionSet() apis.ConditionSet {
 	return condSet
 }
 
 // InitializeConditions sets the initial values to the conditions.
-func (ass *SeccompProfileStatus) InitializeConditions() {
-	condSet.Manage(ass).InitializeConditions()
+func (status *SeccompProfileStatus) InitializeConditions() {
+	condSet.Manage(status).InitializeConditions()
 }

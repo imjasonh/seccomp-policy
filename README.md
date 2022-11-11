@@ -49,7 +49,7 @@ NAME              READY   STATUS      RESTARTS   AGE
 audit-pod-wczbg   0/1     Completed   0          9s
 ```
 
-...and a Pod that uses the `violation` policy:
+...and a Pod that uses the `violation` policy; this should fail:
 
 ```
 $ kubectl create -f pods/violation-pod.yaml

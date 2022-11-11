@@ -20,8 +20,18 @@ import (
 	"context"
 	"fmt"
 
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"knative.dev/pkg/apis"
 )
+
+// SupportedVerbs returns the operations that validation should be called for.
+func (sp *SeccompProfile) SupportedVerbs() []admissionregistrationv1.OperationType {
+	// Don't validate on delete.
+	return []admissionregistrationv1.OperationType{
+		admissionregistrationv1.Create,
+		admissionregistrationv1.Update,
+	}
+}
 
 // Validate implements apis.Validatable
 func (sp *SeccompProfile) Validate(ctx context.Context) *apis.FieldError {
